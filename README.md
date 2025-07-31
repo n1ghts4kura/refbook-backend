@@ -30,6 +30,8 @@
 
 - **answer/ ...** 问答相关操作
 
+- **chat_history/ ...** 用户聊天记录 相关操作
+
 ---
 
 ### _Developed by **n1ghts4kura**_.
