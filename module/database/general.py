@@ -7,7 +7,7 @@ import tinydb
 
 Query = tinydb.Query
 
-ROOT_DB_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'database')
+ROOT_DB_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'database_file')
 
 USER_DB_PATH = f'{ROOT_DB_PATH}/db_user_v1.json'
 USER_DETAIL_DB_PATH = f'{ROOT_DB_PATH}/db_user_detail_v1.json'

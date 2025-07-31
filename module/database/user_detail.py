@@ -13,11 +13,11 @@ class UserDetail(BaseModel):
     用户详情模型
     """
 
-    id: str = Field(..., description="用户ID")
+    id: str = Field(..., description="用户详情ID")
 
-    books: List[str] = Field(default=[], description="用户书籍列表")
-
-    chat_history: List[]
+    chat_history_id: str = Field(..., description="关联的聊天记录ID")
 
     # 用户画像收集
     # user_portrait: Dict[str, Any] = Field(default={}, description="用户画像")
+
+    

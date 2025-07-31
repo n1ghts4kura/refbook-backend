@@ -3,7 +3,7 @@ Dockerfile
 
 # Database file enabled
 # When turning into production, you need to disable this file in order to provide a clean environment for production.
-database/
+database_file/
 db_*_v*.json
 
 # Byte-compiled / optimized / DLL files
