@@ -1,6 +1,11 @@
 # Temporary disable *Dockerfile* (maybe *docker* will be used in the future)
 Dockerfile
 
+# Database file enabled
+# When turning into production, you need to disable this file in order to provide a clean environment for production.
+database/
+db_*_v*.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

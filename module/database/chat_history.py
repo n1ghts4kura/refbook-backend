@@ -3,6 +3,7 @@
 #
 
 import time
+import hashlib
 import asyncio
 from pydantic import BaseModel
 from pydantic.fields import Field
@@ -14,7 +15,7 @@ def _get_current_id(sign: int) -> str:
     """
     获取当前时间戳作为ID
     """
-    return f"this_is_salt_{int(time.time() * 1000)}_chat_history_{sign}"
+    return hashlib.sha256(f"this_is_salt_{int(time.time() * 1000)}_chat_history_{sign}".encode()).hexdigest()
 
 class ChatMessage(BaseModel):
     """
@@ -156,12 +157,16 @@ async def new_chat_message(
             return result
 
         chat_history = chat_history[0]
-        current_messages: List[ChatMessage] = chat_history.get("messages", [0])
-        try:
-            assert all( isinstance(msg, ChatMessage) for msg in current_messages ), \
-                "Chat messages must be of type ChatMessage"
-        except AssertionError as e:
-            result["message"] = f"Chat messages are not valid: {e}"
+        # current_messages: List[ChatMessage] = chat_history.get("messages", [0])
+        # try:
+        #     assert all( isinstance(msg, ChatMessage) for msg in current_messages ), \
+        #         "Chat messages must be of type ChatMessage"
+        # except AssertionError as e:
+        #     result["message"] = f"Chat messages are not valid: {e}"
+        #     return result
+        current_messages = chat_history.get("messages", [0])
+        if current_messages == [0]:
+            result["message"] = "Chat history returns a None message list, please check the database"
             return result
 
         new_id = _get_current_id(1) # Remember to change the sign for different types of ids
@@ -169,7 +174,7 @@ async def new_chat_message(
             id=new_id,
             role=role,
             content=content
-        ))
+        ).model_dump())
 
         db.update({ "messages": current_messages }, Query().id == chat_history_id)
 
@@ -210,7 +215,7 @@ async def get_chat_message_by_id(chat_history_id: str, message_id: str) -> Union
         messages = chat_history.get("messages", [])
 
         for message in messages:
-            if message.id == message_id:
+            if message["id"] == message_id:
                 return ChatMessage(**message)
 
         return {"type": "error", "message": "Message not found"}
@@ -326,7 +331,7 @@ async def delete_chat_message(chat_history_id: str, message_id: str) -> Dict[str
         messages = chat_history.get("messages", [])
 
         for i, message in enumerate(messages):
-            if message.id == message_id:
+            if message["id"] == message_id:
                 del messages[i]
                 db.update({"messages": messages}, Query().id == chat_history_id)
                 result["type"] = "success"
@@ -345,5 +350,8 @@ __all__ = [
     "get_chat_message_by_id",
     "get_chat_message_by_index",
     "delete_chat_history",
-    "delete_chat_message"
+    "delete_chat_message",
+
+    "get_chat_history_database",
+    "Query"
 ]
