@@ -1,6 +1,6 @@
 fastapi
 tinydb
-
 pydantic
-
 uvicorn
+pyjwt
+passlib
