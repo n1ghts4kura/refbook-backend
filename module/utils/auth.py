@@ -61,6 +61,13 @@ async def authenticate_user(
     user = await get_user_by_username(username)
     if isinstance(user, dict):
         return None
-    if not security.verify_password(password, user.password_hash):
+    
+    try:
+        if not security.verify_password(password, user.password_hash):
+            return None
+    except Exception as e:
+        # 记录密码验证错误，可能是哈希格式问题
+        print(f"Password verification error for user {username}: {e}")
         return None
+    
     return user

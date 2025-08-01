@@ -37,18 +37,30 @@ async def lifespan(app: FastAPI):
 
     pass
 
+# 根据环境配置CORS允许的域名
+allowed_origins = ["http://refbookapi.s4kura.cc"]
+if DEBUG:
+    # 开发环境下添加本地域名
+    allowed_origins.extend([
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ])
+
 middleware = [
     Middleware(
         CORSMiddleware,
-        allow_origins=["http://refbookapi.s4kura.cc", ],
+        allow_origins=allowed_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     ),
-    Middleware(
-        HTTPSRedirectMiddleware,
-    )
 ]
+
+# 只在生产环境下启用HTTPS重定向
+if not DEBUG:
+    middleware.append(
+        Middleware(HTTPSRedirectMiddleware)
+    )
 
 app = FastAPI(
     debug=DEBUG,

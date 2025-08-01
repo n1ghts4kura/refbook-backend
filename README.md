@@ -2,6 +2,11 @@
 
 **热书 Refbook** 后端服务器
 
+## How 2 Run (PLZ CHECK ME FIRST)
+```sh
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+```
+
 ## 项目结构
 
 ### 文件结构
@@ -142,7 +147,7 @@
 
         携带: Authorization Bearer \<token here\>
 
-        返回值:
+        返回值: StreamingResponse
 
         ```json
         {
@@ -155,8 +160,8 @@
 
         ```json
         {
-            "type": "success",
-            "message": "余额不够了 / **正在生成中**""
+            "type": "failed",
+            "message": "失败的原因"
         }
         ```
 
