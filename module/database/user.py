@@ -105,6 +105,30 @@ async def get_user_by_id(user_id: str) -> Union[User, Dict[str, str]]:
 
         return User.model_validate(user)
 
+async def get_user_by_username(username: str) -> Union[User, Dict[str, str]]:
+    """
+    根据用户名获取用户信息
+
+    Args:
+        username (str): 用户名
+
+    Returns:
+        User: 用户信息 或 Dict[str, str]: 错误信息
+    """
+    # 输入验证
+    if not username or not username.strip():
+        return {"type": "error", "message": "Username cannot be empty"}
+    
+    username = username.strip()
+    
+    db = get_user_database()
+    user = db.get(Query().username == username)
+
+    if not user:
+        return {"type": "error", "message": "User not found"}
+
+    return User.model_validate(user)
+
 _delete_user_by_id_lock = asyncio.Lock()
 
 async def delete_user_by_id(user_id: str) -> Dict[str, str]:

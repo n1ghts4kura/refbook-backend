@@ -68,7 +68,23 @@
         }
         ```
 
-    - 
+        返回值:
+
+        ```json
+        {
+            "type": "failed",
+            "message": "为什么失败"
+        }
+        ```
+
+        或
+
+        ```json
+        {
+            "type": "success",
+            "message": "具体token"
+        }
+        ```
 
 - **book/ ...** 书籍相关操作
 

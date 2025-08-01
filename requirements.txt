@@ -1,6 +1,8 @@
-fastapi
+fastapi[all]
 tinydb
 pydantic
 uvicorn
 pyjwt
 passlib[bcrypt]
+python-jose[cryptography]
+python-dotenv
