@@ -2,9 +2,15 @@
 
 **热书 Refbook** 后端服务器
 
-## How 2 Run (PLZ CHECK ME FIRST)
+## 提醒
+
+### **tutorials/** 文件夹
+
+> 里面存放了一些guideline，可查阅以快速上手我写的dogshit后端。 lmfao
+
+### **HOW 2 RUN**
 ```sh
-uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app:app --port 8000 --host 0.0.0.0
 ```
 
 ## 项目结构
