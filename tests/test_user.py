@@ -9,7 +9,8 @@ import time
 # 添加项目根目录到Python路径
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from module.database.user import new_user, get_user_by_id, User
+from module.database.user import new_user, get_user_by_id, delete_user_by_id, User
+from module.database.user_detail import get_user_detail
 
 
 async def test_new_user():
@@ -33,6 +34,19 @@ async def test_new_user():
         print(f"✓ 创建新用户成功")
         print(f"  - 用户ID: {result}")
         print(f"  - ID长度: {len(result)}")
+        
+        # 验证用户详情是否也被正确创建
+        user = await get_user_by_id(result)
+        if isinstance(user, User):
+            print(f"  - 用户详情ID: {user.user_detail_id}")
+            
+            # 验证用户详情是否存在
+            user_detail = await get_user_detail(user.user_detail_id)
+            if hasattr(user_detail, 'id'):
+                print(f"✓ 用户详情创建成功")
+            else:
+                print(f"✗ 用户详情创建失败: {user_detail}")
+        
         return result, username, password_hash
     else:
         print(f"✗ 创建新用户失败: {result}")
@@ -55,6 +69,7 @@ async def test_get_user_by_id(user_id, expected_username, expected_password_hash
             print(f"  - 用户ID: {result.id}")
             print(f"  - 用户名: {result.username}")
             print(f"  - 密码哈希: {result.password_hash}")
+            print(f"  - 用户详情ID: {result.user_detail_id}")
             
             # 验证数据正确性
             if result.id == user_id:
@@ -71,6 +86,16 @@ async def test_get_user_by_id(user_id, expected_username, expected_password_hash
                 print(f"✓ 密码哈希匹配")
             else:
                 print(f"✗ 密码哈希不匹配: 期望 {expected_password_hash}, 实际 {result.password_hash}")
+            
+            # 验证用户详情是否存在
+            if result.user_detail_id:
+                user_detail = await get_user_detail(result.user_detail_id)
+                if hasattr(user_detail, 'id'):
+                    print(f"✓ 用户详情存在且有效")
+                else:
+                    print(f"✗ 用户详情无效: {user_detail}")
+            else:
+                print(f"✗ 用户详情ID为空")
                 
         else:
             print(f"✗ 获取用户失败: {result}")
@@ -93,6 +118,67 @@ async def test_get_user_by_id(user_id, expected_username, expected_password_hash
         print(f"✓ 正确处理空字符串ID: {result['message']}")
     else:
         print(f"✗ 未正确处理空字符串ID: {result}")
+
+
+async def test_delete_user_by_id(user_id, username):
+    """测试删除用户"""
+    print("\n" + "=" * 50)
+    print("测试阶段：删除用户")
+    print("=" * 50)
+    
+    if not user_id:
+        print("⚠ 跳过删除用户测试（没有有效的用户ID）")
+        return
+    
+    print(f"\n🔹 测试删除存在的用户 (ID: {user_id}, 用户名: {username})")
+    
+    # 首先验证用户存在
+    user = await get_user_by_id(user_id)
+    if isinstance(user, User):
+        print(f"✓ 确认用户存在，用户详情ID: {user.user_detail_id}")
+        user_detail_id = user.user_detail_id
+        
+        # 删除用户
+        result = await delete_user_by_id(user_id)
+        
+        if isinstance(result, dict) and result.get("type") == "success":
+            print(f"✓ 删除用户成功")
+            
+            # 验证用户是否已被删除
+            deleted_user = await get_user_by_id(user_id)
+            if isinstance(deleted_user, dict) and deleted_user.get("type") == "error":
+                print(f"✓ 确认用户已被删除")
+            else:
+                print(f"✗ 用户删除后仍然存在: {deleted_user}")
+            
+            # 验证用户详情是否也被删除
+            user_detail = await get_user_detail(user_detail_id)
+            if isinstance(user_detail, dict) and user_detail.get("type") == "error":
+                print(f"✓ 确认用户详情也已被删除")
+            else:
+                print(f"✗ 用户详情删除失败: {user_detail}")
+                
+        else:
+            print(f"✗ 删除用户失败: {result}")
+    else:
+        print(f"⚠ 用户不存在，无法测试删除: {user}")
+    
+    # 测试删除不存在的用户
+    print("\n🔹 测试删除不存在的用户")
+    fake_id = "nonexistent_user_id_12345"
+    result = await delete_user_by_id(fake_id)
+    if isinstance(result, dict) and result.get("type") == "error":
+        print(f"✓ 正确处理删除不存在的用户: {result.get('message', 'Unknown error')}")
+    else:
+        print(f"✗ 未正确处理删除不存在的用户: {result}")
+    
+    # 测试删除空字符串ID
+    print("\n🔹 测试删除空字符串ID")
+    result = await delete_user_by_id("")
+    if isinstance(result, dict) and result.get("type") == "error":
+        print(f"✓ 正确处理删除空字符串ID: {result.get('message', 'Unknown error')}")
+    else:
+        print(f"✗ 未正确处理删除空字符串ID: {result}")
 
 
 async def test_multiple_users():
@@ -277,7 +363,8 @@ async def test_data_integrity():
         valid_user = User(
             id="test_id_123",
             username="test_username",
-            password_hash="test_password_hash"
+            password_hash="test_password_hash",
+            user_detail_id="test_user_detail_id_123"
         )
         print(f"✓ 正常User对象创建成功: {valid_user.username}")
     except Exception as e:
@@ -287,7 +374,7 @@ async def test_data_integrity():
         # 测试缺少必需字段的User对象创建
         # 这里故意传入不完整的参数来测试验证，应该会抛出异常
         try:
-            invalid_user = User(id="test_id_456")  # 缺少username和password_hash
+            invalid_user = User(id="test_id_456")  # 缺少username、password_hash和user_detail_id
             print(f"⚠ 不完整User对象创建成功（可能有问题）: {invalid_user}")
         except TypeError as te:
             print(f"✓ 正确拒绝不完整User对象（缺少参数）: {te}")
@@ -366,23 +453,31 @@ async def main():
         # 测试获取用户
         await test_get_user_by_id(user_id, username, password_hash)
         
-        # 2. 多用户测试
+        # 2. 删除功能测试
+        print("\n" + "🗑️ " * 20 + " 删除功能测试 " + "🗑️ " * 20)
+        
+        # 创建一个用于删除测试的用户
+        delete_test_user_id, delete_test_username, _ = await test_new_user()
+        if delete_test_user_id:
+            await test_delete_user_by_id(delete_test_user_id, delete_test_username)
+        
+        # 3. 多用户测试
         print("\n" + "👥" * 20 + " 多用户测试 " + "👥" * 20)
         await test_multiple_users()
         
-        # 3. 并发测试
+        # 4. 并发测试
         print("\n" + "💪" * 20 + " 并发测试 " + "💪" * 20)
         await test_concurrent_user_creation()
         
-        # 4. 边界情况测试
+        # 5. 边界情况测试
         print("\n" + "🎯" * 20 + " 边界情况测试 " + "🎯" * 20)
         await test_edge_cases()
         
-        # 5. 数据完整性测试
+        # 6. 数据完整性测试
         print("\n" + "🔐" * 20 + " 数据完整性测试 " + "🔐" * 20)
         await test_data_integrity()
         
-        # 6. 综合工作流测试
+        # 7. 综合工作流测试
         print("\n" + "🌟" * 20 + " 综合工作流测试 " + "🌟" * 20)
         await test_comprehensive_workflow()
         

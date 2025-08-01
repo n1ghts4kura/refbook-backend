@@ -5,17 +5,25 @@
 import time
 import hashlib
 import asyncio
+import uuid
+import threading
 from pydantic import BaseModel
 from pydantic.fields import Field
 from typing import * # type: ignore
 
 from .general import get_chat_history_database, Query
 
+# 使用线程锁确保ID生成的线程安全
+_id_generation_lock = threading.Lock()
+
 def _get_current_id(sign: int) -> str:
     """
-    获取当前时间戳作为ID
+    生成唯一ID，结合时间戳和UUID确保唯一性
     """
-    return hashlib.sha256(f"this_is_salt_{int(time.time() * 1000)}_chat_history_{sign}".encode()).hexdigest()
+    with _id_generation_lock:
+        timestamp = int(time.time() * 1000000)  # 微秒级时间戳
+        unique_id = str(uuid.uuid4())
+        return hashlib.sha256(f"salt_{timestamp}_{unique_id}_{sign}_chat_history".encode()).hexdigest()
 
 class ChatMessage(BaseModel):
     """
@@ -88,6 +96,11 @@ async def get_chat_history(chat_history_id: str) -> Union[ChatHistory, Dict[str,
         **错误**: "type": "error", "message": "<...>
 
     """
+    # 输入验证
+    if not chat_history_id or not chat_history_id.strip():
+        return {"type": "error", "message": "Chat history ID cannot be empty"}
+    
+    chat_history_id = chat_history_id.strip()
 
     result = {
         "type": "error",
@@ -272,6 +285,11 @@ async def delete_chat_history(chat_history_id: str) -> Dict[str, str]:
 
         **错误**: "type": "error", "message": "<...>"
     """
+    # 输入验证
+    if not chat_history_id or not chat_history_id.strip():
+        return {"type": "error", "message": "Chat history ID cannot be empty"}
+    
+    chat_history_id = chat_history_id.strip()
 
     result = {
         "type": "error",

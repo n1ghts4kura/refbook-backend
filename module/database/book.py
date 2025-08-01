@@ -5,17 +5,25 @@
 import time
 import hashlib
 import asyncio
+import uuid
+import threading
 from pydantic import BaseModel
 from pydantic.fields import Field
 from typing import *  # type: ignore
 
 from .general import get_book_database, Query
 
+# 使用线程锁确保ID生成的线程安全
+_id_generation_lock = threading.Lock()
+
 def _get_current_id(sign: int) -> str:
     """
-    获取当前时间戳作为ID
+    生成唯一ID，结合时间戳和UUID确保唯一性
     """
-    return hashlib.sha256(f"this_is_salt_{int(time.time() * 1000)}_book_{sign}".encode()).hexdigest()
+    with _id_generation_lock:
+        timestamp = int(time.time() * 1000000)  # 微秒级时间戳
+        unique_id = str(uuid.uuid4())
+        return hashlib.sha256(f"salt_{timestamp}_{unique_id}_{sign}_book".encode()).hexdigest()
 
 class Concept(BaseModel):
     """
@@ -96,6 +104,11 @@ async def get_book(book_id: str) -> Union[Book, Dict[str, str]]:
     Returns:
         Union[Book, Dict[str, str]]: 图书对象或错误信息
     """
+    # 输入验证
+    if not book_id or not book_id.strip():
+        return {"type": "error", "message": "Book ID cannot be empty"}
+    
+    book_id = book_id.strip()
 
     async with _get_book_lock:
         db = get_book_database()
@@ -120,6 +133,11 @@ async def delete_book(book_id: str) -> Dict[str, str]:
     Returns:
         Dict[str, str]: 删除结果信息
     """
+    # 输入验证
+    if not book_id or not book_id.strip():
+        return {"type": "error", "message": "Book ID cannot be empty"}
+    
+    book_id = book_id.strip()
 
     async with _delete_book_lock:
         db = get_book_database()
