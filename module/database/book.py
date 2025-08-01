@@ -101,11 +101,32 @@ async def get_book(book_id: str) -> Union[Book, Dict[str, str]]:
         db = get_book_database()
         book_data = db.get(Query().id == book_id)
 
-        if not book_data or len(book_data) == 0:
+        if not book_data:
             return {"type": "error", "message": "Book not found"}
-
-        if len(book_data) > 1:
-            return {"type": "error", "message": "Multiple books found with the same ID, please check your database"}
 
         # assert if book_data is suitable for Book model
         return Book(**book_data) # type: ignore
+
+_delete_book_lock = asyncio.Lock()
+
+async def delete_book(book_id: str) -> Dict[str, str]:
+    """
+    删除指定ID的图书
+
+    Args:
+        book_id (str): 图书ID
+
+    Returns:
+        Dict[str, str]: 删除结果信息
+    """
+
+    async with _delete_book_lock:
+        db = get_book_database()
+        book_data = db.get(Query().id == book_id)
+
+        if not book_data:
+            return {"type": "error", "message": "Book not found"}
+
+        db.remove(Query().id == book_id)
+
+    return {"type": "success", "message": "Book deleted successfully"}
