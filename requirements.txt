@@ -3,4 +3,4 @@ tinydb
 pydantic
 uvicorn
 pyjwt
-passlib
+passlib[bcrypt]

@@ -2,5 +2,72 @@
 # 数据库 用户部分 定义与操作
 #
 
-from .general import get_user_database
+import time
+import hashlib
+import asyncio
+from pydantic import BaseModel
+from pydantic.fields import Field
+from typing import *  # type: ignore
 
+from .general import get_user_database, Query
+
+def _get_current_id(sign: int) -> str:
+    """
+    获取当前时间戳作为ID
+    """
+    return hashlib.sha256(f"this_is_salt_{int(time.time() * 1000)}_user_{sign}".encode()).hexdigest()
+
+class User(BaseModel):
+    """
+    用户模型
+    """
+
+    id: str = Field(..., description="用户ID")
+
+    username: str = Field(..., description="用户名")
+    
+    password_hash: str = Field(..., description="密码哈希")
+
+# ---
+
+_new_user_lock = asyncio.Lock()
+
+async def new_user(username: str, password_hash: str) -> Union[str, bool]:
+    """
+    创建新的用户
+
+    Args:
+        username (str): 用户名
+        password_hash (str): 密码哈希
+
+    Returns:
+        str: 新的用户ID
+    """
+    async with _new_user_lock:
+        user_id = _get_current_id(1)
+        user = User(id=user_id, username=username, password_hash=password_hash)
+
+        get_user_database().insert(user.model_dump())
+
+    return user_id
+
+_get_user_by_id_lock = asyncio.Lock()
+
+async def get_user_by_id(user_id: str) -> Union[User, Dict[str, str]]:
+    """
+    根据用户ID获取用户信息
+
+    Args:
+        user_id (str): 用户ID
+
+    Returns:
+        User: 用户信息
+    """
+    async with _get_user_by_id_lock:
+        db = get_user_database()
+        user = db.get(Query().id == user_id)
+
+        if not user:
+            return {"type": "error", "message": "User not found"}
+
+        return User.model_validate(user)

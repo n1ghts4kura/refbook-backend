@@ -105,7 +105,8 @@ async def get_book(book_id: str) -> Union[Book, Dict[str, str]]:
             return {"type": "error", "message": "Book not found"}
 
         # assert if book_data is suitable for Book model
-        return Book(**book_data) # type: ignore
+        # return Book(**book_data) # type: ignore
+        return Book.model_validate(book_data)
 
 _delete_book_lock = asyncio.Lock()
 

@@ -119,7 +119,8 @@ async def get_user_detail(user_detail_id: str) -> Union[UserDetail, Dict[str, st
             return {"type": "error", "message": "User detail not found"}
 
         # assert if user_detail_data is suitable for UserDetail model
-        return UserDetail(**user_detail_data) # type: ignore
+        # return UserDetail(**user_detail_data) # type: ignore
+        return UserDetail.model_validate(user_detail_data)
 
 _delete_user_detail_lock = asyncio.Lock()
 
