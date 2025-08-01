@@ -35,7 +35,7 @@
         ```json
         {
             "username": "用户名",
-            "password_hash": "密码的加盐哈希"
+            "password": "密码" // plain text password
         } 
         ```
 
@@ -43,7 +43,8 @@
 
         ```json
         {
-            "type": "success"
+            "type": "success",
+            // "message": "新用户的ID"
         }
         ```
 
@@ -54,6 +55,9 @@
             "type": "failed",
             "message": "失败的原因"
         }
+        ```
+
+        > 创建后自行再次使用相同的username与password登录
 
     - **login/** 获取 _**OAuth2 token**_
 
