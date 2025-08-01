@@ -14,5 +14,8 @@ class Config:
     ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 
     ALGORITHM = os.getenv("ALGORITHM", "HS256")
+    
+    # DEBUG模式配置，默认为False以确保生产环境安全
+    DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes", "on")
 
 configs = Config()

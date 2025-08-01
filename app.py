@@ -2,7 +2,8 @@
 # The main entry point for the FastAPI application.
 #
 
-DEBUG = True
+from module.utils.config import configs
+DEBUG = configs.DEBUG
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -14,6 +15,7 @@ from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from module.routes.answer import router as answer_router
 from module.routes.book import router as book_router
 from module.routes.user.router import router as user_router
+from module.routes.admin import router as admin_router
 
 from module.database.general import (
     get_book_database,
@@ -76,3 +78,4 @@ app = FastAPI(
 app.include_router(answer_router, prefix="/api/answer", tags=["Answer"])
 app.include_router(book_router, prefix="/api/book", tags=["Book"])
 app.include_router(user_router, prefix="/api/user", tags=["User"])
+app.include_router(admin_router, prefix="/api", tags=["Admin"])
