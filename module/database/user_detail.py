@@ -124,7 +124,7 @@ async def get_user_detail(user_detail_id: str) -> Union[UserDetail, Dict[str, st
 
 _delete_user_detail_lock = asyncio.Lock()
 
-async def delete_user_detail(user_detail_id: str) -> Dict[str, str]:
+async def delete_user_detail_by_id(user_detail_id: str) -> Dict[str, str]:
     """
     删除指定ID的用户详情（级联删除关联的聊天记录和图书）
 

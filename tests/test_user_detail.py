@@ -263,7 +263,7 @@ async def test_delete_user_detail(user_detail_id):
     
     # 测试删除存在的用户详情
     print(f"\n🔹 执行用户详情删除操作 (ID: {user_detail_id[:16]}...)")
-    result = await delete_user_detail(user_detail_id)
+    result = await delete_user_detail_by_id(user_detail_id)
     
     if result["type"] == "success":
         print(f"✓ 成功删除用户详情: {result['message']}")
@@ -314,7 +314,7 @@ async def test_delete_user_detail(user_detail_id):
     # 测试删除不存在的用户详情
     print(f"\n🔹 测试删除不存在的用户详情")
     fake_id = "nonexistent_user_detail_id_12345"
-    result = await delete_user_detail(fake_id)
+    result = await delete_user_detail_by_id(fake_id)
     if result["type"] == "error" and "not found" in result["message"]:
         print(f"✓ 正确处理删除不存在的用户详情: {result['message']}")
     else:
@@ -350,7 +350,7 @@ async def test_concurrent_operations():
     # 清理测试数据
     print(f"\n🔹 清理并发测试数据")
     for i, user_id in enumerate(created_user_ids):
-        result = await delete_user_detail(user_id)
+        result = await delete_user_detail_by_id(user_id)
         if result["type"] == "success":
             print(f"✓ 清理用户详情{i+1}: 成功")
         else:
@@ -380,7 +380,7 @@ async def test_edge_cases():
         print(f"   添加空字符串图书ID结果: {result}")
         
         # 清理测试数据
-        await delete_user_detail(user_id)
+        await delete_user_detail_by_id(user_id)
     
     # 测试None值（这会引发异常，需要捕获）
     print("\n🔹 测试None参数")
@@ -421,7 +421,7 @@ async def test_data_integrity():
             print(f"  - 图书聊天记录有效: {not isinstance(book_result, dict) or book_result.get('type') != 'error'}")
             
         # 清理测试数据
-        await delete_user_detail(user_id)
+        await delete_user_detail_by_id(user_id)
     
     print("\n🔹 测试图书列表操作的完整性")
     
@@ -446,7 +446,7 @@ async def test_data_integrity():
             print(f"  操作{i+1} ({operation}): {'✓' if actual == expected else '✗'} 期望{expected}, 实际{actual}")
         
         # 清理测试数据
-        await delete_user_detail(user_id)
+        await delete_user_detail_by_id(user_id)
 
 
 async def test_comprehensive_workflow():
@@ -535,7 +535,7 @@ async def test_comprehensive_workflow():
         # 清理数据
         print(f"\n🔹 清理工作流测试数据")
         if "user_id" in workflow_data:
-            result = await delete_user_detail(workflow_data["user_id"])
+            result = await delete_user_detail_by_id(workflow_data["user_id"])
             if result["type"] == "success":
                 print("✓ 用户详情清理成功")
             else:
